@@ -110,6 +110,23 @@ export class Scanner {
           while (this.peek() != "\n" && !this.isAtEnd()) {
             this.advance();
           }
+        } else if (this.match("*")) {
+          // a block comment goes until the closing */
+          while (
+            this.peek() !== "*" &&
+            this.peekNext() !== "/" &&
+            !this.isAtEnd()
+          ) {
+            this.advance();
+          }
+
+          // consume the closing star and slash
+          if (!this.isAtEnd()) {
+            this.advance();
+          }
+          if (!this.isAtEnd()) {
+            this.advance();
+          }
         } else {
           this.addToken("SLASH");
         }
