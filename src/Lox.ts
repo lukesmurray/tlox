@@ -9,6 +9,7 @@ export class Lox {
 
   public static main() {
     const args = process.argv;
+    // first arg is ts-node, second is path to src/index.ts
     if (args.length > 3) {
       process.stderr.write("Usage: ts-node src/index.ts [script]");
       process.exit(64);
