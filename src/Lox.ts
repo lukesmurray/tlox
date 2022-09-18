@@ -9,11 +9,11 @@ export class Lox {
 
   public static main() {
     const args = process.argv;
-    if (args.length > 1) {
+    if (args.length > 3) {
       process.stderr.write("Usage: ts-node src/index.ts [script]");
       process.exit(64);
-    } else if (args.length == 1) {
-      Lox.runFile(args[0]);
+    } else if (args.length == 3) {
+      Lox.runFile(args[2]);
     } else {
       Lox.runPrompt();
     }
@@ -50,7 +50,7 @@ export class Lox {
     const tokens: Token[] = scanner.scanTokens();
 
     for (const token of tokens) {
-      process.stdout.write(token.toString());
+      process.stdout.write(`${token.toString()}\n`);
     }
   }
 

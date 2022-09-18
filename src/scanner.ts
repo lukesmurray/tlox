@@ -8,6 +8,24 @@ export class Scanner {
   private start: number = 0;
   private current: number = 0;
   private line: number = 1;
+  private static keywords: { [key: string]: TokenType } = {
+    and: "AND",
+    class: "CLASS",
+    else: "ELSE",
+    false: "FALSE",
+    for: "FOR",
+    fun: "FUN",
+    if: "IF",
+    nil: "NIL",
+    or: "OR",
+    print: "PRINT",
+    return: "RETURN",
+    super: "SUPER",
+    this: "THIS",
+    true: "TRUE",
+    var: "VAR",
+    while: "WHILE",
+  };
 
   constructor(source: string) {
     this.source = source;
@@ -107,11 +125,76 @@ export class Scanner {
         this.line++;
         break;
       }
+      case '"': {
+        this.string();
+        break;
+      }
       default: {
-        Lox.error(this.line, "Unexpected character.");
+        if (this.isDigit(c)) {
+          this.number();
+        } else if (this.isAlpha(c)) {
+          this.identifier();
+        } else {
+          Lox.error(this.line, "Unexpected character.");
+        }
         break;
       }
     }
+  }
+
+  private identifier() {
+    while (this.isAlphaNumeric(this.peek())) {
+      this.advance();
+    }
+
+    const text: string = this.source.substring(this.start, this.current);
+    const type = Scanner.keywords[text] ?? "IDENTIFIER";
+    this.addToken(type);
+  }
+
+  private number(): void {
+    while (this.isDigit(this.peek())) {
+      this.advance();
+    }
+
+    // Look for a fractional part.
+    if (this.peek() == "." && this.isDigit(this.peekNext())) {
+      // Consume the "."
+      this.advance();
+
+      while (this.isDigit(this.peek())) {
+        this.advance();
+      }
+    }
+
+    this.addToken(
+      "NUMBER",
+      Number(this.source.substring(this.start, this.current))
+    );
+  }
+
+  private string(): void {
+    while (this.peek() != '"' && !this.isAtEnd()) {
+      if (this.peek() == "\n") {
+        this.line++;
+      }
+      this.advance();
+    }
+
+    if (this.isAtEnd()) {
+      Lox.error(this.line, "Unterminated string.");
+      return;
+    }
+
+    // The closing ".
+    this.advance();
+
+    // Trim the surrounding quotes.
+    const value: string = this.source.substring(
+      this.start + 1,
+      this.current - 1
+    );
+    this.addToken("STRING", value);
   }
 
   private match(expected: string): boolean {
@@ -131,6 +214,25 @@ export class Scanner {
       return "\0";
     }
     return this.source.charAt(this.current);
+  }
+
+  private peekNext(): string {
+    if (this.current + 1 >= this.source.length) {
+      return "\0";
+    }
+    return this.source.charAt(this.current + 1);
+  }
+
+  private isAlpha(c: string): boolean {
+    return (c >= "a" && c <= "z") || (c >= "A" && c <= "Z") || c == "_";
+  }
+
+  private isAlphaNumeric(c: string): boolean {
+    return this.isAlpha(c) || this.isDigit(c);
+  }
+
+  private isDigit(c: string): boolean {
+    return c >= "0" && c <= "9";
   }
 
   private advance(): string {
