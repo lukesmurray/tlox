@@ -1,6 +1,6 @@
 import { TokenType } from "./tokenType";
 
-class Token {
+export class Token {
   public type: TokenType;
   public lexeme: string;
   public literal: any;
