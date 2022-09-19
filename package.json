@@ -8,7 +8,8 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "start": "ts-node src/lox/index.ts",
+    "run": "ts-node src/lox/index.ts",
+    "generateAst": "ts-node src/tools/generateAst.ts ./src/lox",
     "lint": "prettier --write src/**/*.ts"
   },
   "devDependencies": {

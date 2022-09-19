@@ -1,4 +1,4 @@
-import { Lox } from "./Lox";
+import { Lox } from "./lox";
 import { Token } from "./token";
 import { TokenType } from "./tokenType";
 
