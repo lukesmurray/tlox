@@ -27,8 +27,11 @@ class GenerateAst {
     const path: string = `${outputDir}/${baseName.toLocaleLowerCase()}.ts`;
     const writer: fs.WriteStream = fs.createWriteStream(path, "utf-8");
 
-    writer.write(`import { Token } from "./token";`);
+    writer.write(`import { Token } from "./token";\n`);
     writer.write("\n");
+
+    // define the namespace
+    writer.write(`export namespace ${baseName} {\n`);
 
     // define the visitor interface
     this.defineVisitor(writer, baseName, types);
@@ -46,13 +49,16 @@ class GenerateAst {
       writer.write("\n");
     }
 
+    // close the namespace
+    writer.write(`}\n`);
+
     writer.close();
   }
 
   private static defineBase(writer: fs.WriteStream, baseName: string) {
-    writer.write(`abstract class ${baseName} {\n`);
-    writer.write(`  abstract accept<R>(visitor: Visitor<R>): R;\n`);
-    writer.write(`}\n`);
+    writer.write(`  export abstract class ${baseName} {\n`);
+    writer.write(`    abstract accept<R>(visitor: Visitor<R>): R;\n`);
+    writer.write(`  }\n`);
   }
 
   private static defineVisitor(
@@ -61,15 +67,15 @@ class GenerateAst {
     types: string[]
   ) {
     // define the visitor interface
-    writer.write(`\n`);
-    writer.write(`interface Visitor<R> {\n`);
+    writer.write(`  export interface Visitor<R> {\n`);
     for (const type of types) {
       const typeName: string = type.split(":")[0].trim();
       writer.write(
-        `  visit${typeName}${baseName}(${baseName.toLocaleLowerCase()}: ${typeName}): R;\n`
+        `    visit${typeName}${baseName}(${baseName.toLocaleLowerCase()}: ${typeName}): R;\n`
       );
     }
-    writer.write(`}\n`);
+    // close the visitor interface
+    writer.write(`  }\n`);
   }
 
   private static defineType(
@@ -79,32 +85,34 @@ class GenerateAst {
     fieldList: string
   ) {
     // define the class
-    writer.write(`class ${className} extends ${baseName} {\n`);
+    writer.write(`  export class ${className} extends ${baseName} {\n`);
 
     // define the fields fields
     const fields: string[] = fieldList.split(",").map((s) => s.trim());
     for (const field of fields) {
-      writer.write(`  public ${field};\n`);
+      writer.write(`    public ${field};\n`);
     }
     writer.write(`\n`);
 
     // define the constructor
-    writer.write(`  constructor(${fieldList}) {\n`);
-    writer.write(`    super();\n`);
+    writer.write(`    constructor(${fieldList}) {\n`);
+    writer.write(`      super();\n`);
     for (const field of fields) {
       const [name, _type] = field.split(":").map((s) => s.trim());
-      writer.write(`    this.${name} = ${name};\n`);
+      writer.write(`      this.${name} = ${name};\n`);
     }
-    writer.write(`  }\n`);
+    // close the constructor
+    writer.write(`    }\n`);
 
     writer.write(`\n`);
 
     // implement the accept method
-    writer.write(`  public override accept<R>(visitor: Visitor<R>): R {\n`);
-    writer.write(`    return visitor.visit${className}${baseName}(this);\n`);
-    writer.write(`  }\n`);
+    writer.write(`    public override accept<R>(visitor: Visitor<R>): R {\n`);
+    writer.write(`      return visitor.visit${className}${baseName}(this);\n`);
+    writer.write(`    }\n`);
 
-    writer.write(`}\n`);
+    // close the class
+    writer.write(`  }\n`);
   }
 }
 
