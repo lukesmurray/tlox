@@ -13,7 +13,7 @@ export class Lox {
     if (args.length > 3) {
       process.stderr.write("Usage: ts-node src/index.ts [script]");
       process.exit(64);
-    } else if (args.length == 3) {
+    } else if (args.length === 3) {
       Lox.runFile(args[2]);
     } else {
       Lox.runPrompt();

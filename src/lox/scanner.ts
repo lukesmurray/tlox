@@ -175,7 +175,7 @@ export class Scanner {
     }
 
     // Look for a fractional part.
-    if (this.peek() == "." && this.isDigit(this.peekNext())) {
+    if (this.peek() === "." && this.isDigit(this.peekNext())) {
       // Consume the "."
       this.advance();
 
@@ -192,7 +192,7 @@ export class Scanner {
 
   private string(): void {
     while (this.peek() != '"' && !this.isAtEnd()) {
-      if (this.peek() == "\n") {
+      if (this.peek() === "\n") {
         this.line++;
       }
       this.advance();
@@ -241,7 +241,7 @@ export class Scanner {
   }
 
   private isAlpha(c: string): boolean {
-    return (c >= "a" && c <= "z") || (c >= "A" && c <= "Z") || c == "_";
+    return (c >= "a" && c <= "z") || (c >= "A" && c <= "Z") || c === "_";
   }
 
   private isAlphaNumeric(c: string): boolean {
