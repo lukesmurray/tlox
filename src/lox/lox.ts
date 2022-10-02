@@ -1,6 +1,9 @@
 import * as fs from "node:fs";
 import * as process from "node:process";
 import * as readline from "node:readline";
+import { AstPrinter } from "./astPrinter";
+import { Expr } from "./expr";
+import { Parser } from "./parser";
 import { Scanner } from "./scanner";
 import { Token } from "./token";
 
@@ -49,14 +52,25 @@ export class Lox {
   private static run(source: string) {
     const scanner: Scanner = new Scanner(source);
     const tokens: Token[] = scanner.scanTokens();
-
-    for (const token of tokens) {
-      process.stdout.write(`${token.toString()}\n`);
+    const parser: Parser = new Parser(tokens);
+    const expression: Expr.Expr | null = parser.parse();
+    if (this.hadError) {
+      return;
     }
+
+    process.stdout.write(`${new AstPrinter().print(expression!)}\n`);
   }
 
-  public static error(line: number, message: string) {
-    Lox.report(line, "", message);
+  public static error(line: number, message: string): void;
+  public static error(token: Token, message: string): void;
+  public static error(context: number | Token, message: string): void {
+    if (typeof context === "number") {
+      Lox.report(context, "", message);
+    } else if (context.type === "EOF") {
+      Lox.report(context.line, " at end", message);
+    } else {
+      Lox.report(context.line, ` at '${context.lexeme}'`, message);
+    }
   }
 
   private static report(line: number, where: string, message: string) {
